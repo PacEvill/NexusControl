@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - SensorView{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="/static/css/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Dashboard de Sensores</h1>
+        <div class="dashboard-actions">
+            <button class="btn-refresh" title="Atualizar dados">
+                <span class="material-icons">refresh</span>
+            </button>
+            <button class="btn-settings" title="Configurações">
+                <span class="material-icons">settings</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="sensor-grid">
+        {% for sensor in sensors %}
+        <div class="sensor-card {% if sensor.status == 'alert' %}sensor-alert{% elif sensor.status == 'warning' %}sensor-warning{% else %}sensor-normal{% endif %}">
+            <div class="sensor-header">
+                <h3>{{ sensor.name }}</h3>
+                <span class="sensor-status">{{ sensor.status_display }}</span>
+            </div>
+            <div class="sensor-content">
+                <div class="sensor-value">{{ sensor.value }} {{ sensor.unit }}</div>
+                <div class="sensor-chart">
+                    <!-- Gráfico será implementado com JavaScript -->
+                </div>
+            </div>
+            <div class="sensor-footer">
+                <span class="sensor-timestamp">Última atualização: {{ sensor.last_update }}</span>
+                <button class="btn-details" data-sensor-id="{{ sensor.id }}">Detalhes</button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-sensors">
+            <p>Nenhum sensor encontrado. Adicione sensores para começar o monitoramento.</p>
+            <button class="btn-add-sensor">Adicionar Sensor</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h2>SensorView</h2>
+    <button id="sidebar-toggle" class="sidebar-toggle">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+  <nav class="sidebar-nav">
+    <ul>
+      <li class="{% if request.path == '/dashboard/' %}active{% endif %}">
+        <a href="/dashboard/"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+      </li>
+      <li class="{% if '/sensors/' in request.path %}active{% endif %}">
+        <a href="/sensors/"><i class="fas fa-microchip"></i> <span>Sensores</span></a>
+      </li>
+      <li class="{% if '/catalogo/' in request.path %}active{% endif %}">
+        <a href="/catalogo/"><i class="fas fa-book"></i> <span>Catálogo</span></a>
+      </li>
+      <li class="{% if '/portfolio/' in request.path %}active{% endif %}">
+        <a href="/portfolio/"><i class="fas fa-briefcase"></i> <span>Portfólio</span></a>
+      </li>
+    </ul>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/login/" class="login-btn"><i class="fas fa-sign-in-alt"></i> <span>Login</span></a>
+  </div>
+</aside>

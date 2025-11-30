@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Sensores - SensorView{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0">Sensores</h2>
+    <button class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Novo Sensor
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Conexão</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Última Atualização</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sensor in sensors %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'sensors:detail' sensor.id %}"
+                                class="text-decoration-none fw-bold text-dark">
+                                {{ sensor.name }}
+                            </a>
+                            {% if sensor.description %}
+                            <br><small class="text-muted">{{ sensor.description|truncatechars:30 }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ sensor.get_sensor_type_display }}</td>
+                        <td>{{ sensor.get_connection_type_display }}</td>
+                        <td>{{ sensor.value }} {{ sensor.unit }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if sensor.status == 'normal' %}bg-success
+                                {% elif sensor.status == 'warning' %}bg-warning
+                                {% elif sensor.status == 'alert' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ sensor.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ sensor.last_update|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'sensors:detail' sensor.id %}" class="btn btn-sm btn-outline-secondary">
+                                Detalhes
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            Nenhum sensor encontrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

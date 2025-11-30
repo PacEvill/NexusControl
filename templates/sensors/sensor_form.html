@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Adicionar Sensor - SensorView{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Adicionar Novo Sensor</h1>
+    
+    <form method="post" class="sensor-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">Nome do Sensor</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Descrição</label>
+            <textarea id="description" name="description" rows="3"></textarea>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="unit">Unidade</label>
+                <input type="text" id="unit" name="unit" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="value">Valor Inicial</label>
+                <input type="number" id="value" name="value" step="0.01" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="min_value">Valor Mínimo</label>
+                <input type="number" id="min_value" name="min_value" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="max_value">Valor Máximo</label>
+                <input type="number" id="max_value" name="max_value" step="0.01" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="warning_min">Mínimo para Alerta</label>
+                <input type="number" id="warning_min" name="warning_min" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="warning_max">Máximo para Alerta</label>
+                <input type="number" id="warning_max" name="warning_max" step="0.01" required>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">Salvar Sensor</button>
+            <a href="{% url 'sensor_list' %}" class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Command Center - NexusControl{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-dark">Command Center (Regiões)</h2>
+        <p class="text-muted">Visão geral agregada por região operacional.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for stat in region_stats %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-white border-0 pt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0">{{ stat.region.name }}</h5>
+                    <span class="badge bg-secondary">{{ stat.locations_count }} Locais</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0">{{ stat.total }}</h3>
+                        <small class="text-muted">Sensores</small>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="fw-bold text-success mb-0">{{ stat.online }}</h3>
+                        <small class="text-muted">Online</small>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="fw-bold {% if stat.alerts > 0 %}text-danger{% else %}text-muted{% endif %} mb-0">{{
+                            stat.alerts }}</h3>
+                        <small class="text-muted">Alertas</small>
+                    </div>
+                </div>
+                {% if stat.region.description %}
+                <p class="card-text text-muted small">{{ stat.region.description|truncatechars:100 }}</p>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white border-0 pb-3">
+                <a href="{% url 'sensors:dashboard' %}?location={{ stat.region.locations.first.id }}"
+                    class="btn btn-outline-primary w-100">
+                    Ver Detalhes
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">Nenhuma região cadastrada.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

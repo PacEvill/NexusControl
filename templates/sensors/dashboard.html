@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - NexusControl{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 class="fw-bold text-dark">Visão Geral</h2>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <form method="get" class="d-inline-flex align-items-center">
+            <label for="location" class="me-2 fw-bold text-muted">Localização:</label>
+            <select name="location" id="location" class="form-select w-auto" onchange="this.form.submit()">
+                <option value="">Todas as Regiões</option>
+                {% for loc in locations %}
+                <option value="{{ loc.id }}">
+                    {{ loc.name }} {% if loc.region %}({{ loc.region }}){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100 bg-gradient-primary">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h6 class="card-subtitle mb-2 opacity-75">Sensores Totais</h6>
+                    <h2 class="card-title fw-bold">{{ stats.total }}</h2>
+                </div>
+                <i class="bi bi-broadcast fs-1 opacity-50 align-self-end"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100 bg-gradient-success">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h6 class="card-subtitle mb-2 opacity-75">Online</h6>
+                    <h2 class="card-title fw-bold">{{ stats.online }}</h2>
+                </div>
+                <i class="bi bi-check-circle fs-1 opacity-50 align-self-end"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning h-100 bg-gradient-warning">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h6 class="card-subtitle mb-2 opacity-75">Offline</h6>
+                    <h2 class="card-title fw-bold">{{ stats.offline }}</h2>
+                </div>
+                <i class="bi bi-power fs-1 opacity-50 align-self-end"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger h-100 bg-gradient-danger">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h6 class="card-subtitle mb-2 opacity-75">Com Erro</h6>
+                    <h2 class="card-title fw-bold">{{ stats.error }}</h2>
+                </div>
+                <i class="bi bi-exclamation-triangle fs-1 opacity-50 align-self-end"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Status dos Sensores</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Sensores por Tipo</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Alerts -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Alertas Recentes</h5>
+                <span class="badge bg-danger">{{ recent_alerts.count }} Ativos</span>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for alert in recent_alerts %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-{{ alert.severity|yesno:'danger,warning,info' }} me-2">
+                            {{ alert.get_severity_display }}
+                        </span>
+                        <strong>{{ alert.sensor.name }}</strong>: {{ alert.message }}
+                    </div>
+                    <small class="text-muted">{{ alert.timestamp|timesince }} atrás</small>
+                </div>
+                {% empty %}
+                <div class="list-group-item text-center text-muted py-4">
+                    Nenhum alerta ativo no momento.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data for JS -->
+{{ stats|json_script:"sensor-stats" }}
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Parse data from JSON script tag
+        const stats = JSON.parse(document.getElementById('sensor-stats').textContent);
+
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Online', 'Offline', 'Erro', 'Alerta'],
+                datasets: [{
+                    data: [
+                        stats.online,
+                        stats.offline,
+                        stats.error,
+                        stats.total - (stats.online + stats.offline + stats.error)
+                    ],
+                    backgroundColor: ['#198754', '#6c757d', '#dc3545', '#ffc107'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Type Chart
+        const typeCtx = document.getElementById('typeChart').getContext('2d');
+        new Chart(typeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Total', 'Online'],
+                datasets: [{
+                    label: 'Sensores',
+                    data: [stats.total, stats.online],
+                    backgroundColor: ['#0d6efd', '#198754']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Real-time Chart
+        const realtimeCtx = document.getElementById('realtimeChart').getContext('2d');
+        const realtimeChart = new Chart(realtimeCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Leituras (Ao Vivo)',
+                    data: [],
+                    borderColor: '#0d6efd',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { beginAtZero: true }
+                },
+                animation: {
+                    duration: 0 // Disable animation for smooth real-time updates
+                }
+            }
+        });
+
+        // WebSocket Connection with Auto-Reconnect
+        function connectWebSocket() {
+            const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+            const dashboardSocket = new WebSocket(
+                wsScheme + '://' + window.location.host + '/ws/dashboard/'
+            );
+
+            dashboardSocket.onopen = function () {
+                console.log('WebSocket Conectado');
+                // Optional: Reset retry delay or show "Connected" UI
+            };
+
+            dashboardSocket.onmessage = function (e) {
+                const data = JSON.parse(e.data);
+                const message = data.message;
+                console.log('Atualização do Sensor:', message);
+
+                // Update Live Indicator
+                const indicator = document.querySelector('.live-indicator');
+                if (indicator) {
+                    indicator.style.animationDuration = '0.2s';
+                    setTimeout(() => { indicator.style.animationDuration = '2s'; }, 500);
+                }
+
+                // Update Real-time Chart
+                const now = new Date().toLocaleTimeString();
+                realtimeChart.data.labels.push(now);
+                realtimeChart.data.datasets[0].data.push(message.value);
+
+                // Keep only last 10 points
+                if (realtimeChart.data.labels.length > 10) {
+                    realtimeChart.data.labels.shift();
+                    realtimeChart.data.datasets[0].data.shift();
+                }
+                realtimeChart.update();
+
+                // Toast Notification
+                const toastHtml = `
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                <strong class="me-auto">NexusControl</strong>
+                                <small>Agora</small>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                ${message.sensor_name}: ${message.value} ${message.unit} (${message.status})
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', toastHtml);
+            };
+
+            dashboardSocket.onclose = function (e) {
+                console.error('Socket fechado inesperadamente. Reconectando em 3s...');
+                setTimeout(function () {
+                    connectWebSocket();
+                }, 3000);
+            };
+
+            dashboardSocket.onerror = function (err) {
+                console.error('Erro no socket: ', err.message, 'Fechando socket');
+                dashboardSocket.close();
+            };
+        }
+
+        connectWebSocket();
+    });
+</script>
+{% endblock %}

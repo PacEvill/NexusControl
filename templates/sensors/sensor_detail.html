@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sensor.name }} - SensorView{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'sensors:list' %}" class="text-decoration-none text-muted">
+        <i class="bi bi-arrow-left"></i> Voltar para lista
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-dark">{{ sensor.name }}</h2>
+        <p class="text-muted">{{ sensor.description }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <span class="badge fs-6
+            {% if sensor.status == 'normal' %}bg-success
+            {% elif sensor.status == 'warning' %}bg-warning
+            {% elif sensor.status == 'alert' %}bg-danger
+            {% else %}bg-secondary{% endif %}">
+            {{ sensor.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Current Value -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted text-uppercase mb-2">Valor Atual</h6>
+                <h1 class="display-4 fw-bold text-primary">{{ sensor.value }} <small class="fs-4 text-muted">{{
+                        sensor.unit }}</small></h1>
+                <small class="text-muted">Atualizado em: {{ sensor.last_update|date:"d/m/Y H:i:s" }}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">Detalhes Técnicos</div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><strong>Tipo:</strong> {{ sensor.get_sensor_type_display }}</li>
+                    <li class="mb-2"><strong>Conexão:</strong> {{ sensor.get_connection_type_display }}</li>
+                    <li class="mb-2"><strong>MAC:</strong> {{ sensor.mac_address|default:"-" }}</li>
+                    <li class="mb-2"><strong>IP:</strong> {{ sensor.ip_address|default:"-" }}</li>
+                    <li class="mb-2"><strong>Bateria:</strong> {{ sensor.battery_level }}%</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Limits -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">Limites de Alerta</div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Mínimo (Alerta):</span>
+                        <span class="text-danger fw-bold">{{ sensor.min_value }}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Mínimo (Atenção):</span>
+                        <span class="text-warning fw-bold">{{ sensor.warning_min }}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Máximo (Atenção):</span>
+                        <span class="text-warning fw-bold">{{ sensor.warning_max }}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Máximo (Alerta):</span>
+                        <span class="text-danger fw-bold">{{ sensor.max_value }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white fw-bold">Histórico de Leituras</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in readings %}
+                            <tr>
+                                <td>{{ reading.timestamp|date:"d/m/Y H:i:s" }}</td>
+                                <td>{{ reading.value }} {{ sensor.unit }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">Sem histórico disponível.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
