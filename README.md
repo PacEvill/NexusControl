@@ -11,8 +11,8 @@
 
 ```mermaid
 graph TD
-    A[Região (ex: Campus)] --> B[Local (ex: Sala de Servidores)]
-    B --> C[Sensor (ex: Sensor Temp 01)]
+    A["Região (ex: Campus)"] --> B["Local (ex: Sala de Servidores)"]
+    B --> C["Sensor (ex: Sensor Temp 01)"]
     C -->|Enviar Dados (API)| D[Backend NexusControl]
     D -->|WebSocket| E[Dashboard ao Vivo]
     D -->|Persistir| F[PostgreSQL]
